@@ -1,3 +1,4 @@
+#pragma once
 #include <cstdint>
 #include <iostream>
 #include <cstdlib>
@@ -12,10 +13,11 @@ namespace emansis {
         	uint8_t m_nMaleCount 	= 0;
         	/// @brief 女性数量
         	uint8_t m_nFemalCount 	= 0;
+			//TODO:初始生育意愿意愿衰减更改为函数形式参数
 			/// @brief 生育意愿衰减倍率
-			double 	m_lfBornIdeasReduceMul	= 0.0;
-			/// @brief 一胎意愿
-			double	m_lfBornIdeasFirst	= 0.0;
+			double 	m_lfReduceMulOf_bornIdeas	= 0.0;
+			/// @brief 初始生育意愿
+			double	m_lfInitialValueOf_bornIdeasFirst	= 0.0;
         public:
 			/// @brief 						初始化家庭
 			/// @param bornIdeasFirst 		一胎意愿			1.0~0.0
@@ -23,12 +25,12 @@ namespace emansis {
 			Family(double bornIdeasFirst = 1.0, double bornIdeasReduceMul = 0.0)
 			: m_nMaleCount	(0)
 			, m_nFemalCount	(0)
-			, m_lfBornIdeasReduceMul	(bornIdeasReduceMul)
-			, m_lfBornIdeasFirst		(bornIdeasFirst) {
-				if 	(m_lfBornIdeasFirst 	<= 0.0 || m_lfBornIdeasFirst 	>= 1.0)
-					m_lfBornIdeasFirst = 1.0;
-				if 	(m_lfBornIdeasReduceMul 	<= 0.0 || m_lfBornIdeasReduceMul 	>= 1.0)
-					m_lfBornIdeasReduceMul = 0.0;
+			, m_lfReduceMulOf_bornIdeas	(bornIdeasReduceMul)
+			, m_lfInitialValueOf_bornIdeasFirst		(bornIdeasFirst) {
+				if 	(m_lfInitialValueOf_bornIdeasFirst 	<= 0.0 || m_lfInitialValueOf_bornIdeasFirst 	>= 1.0)
+					m_lfInitialValueOf_bornIdeasFirst = 1.0;
+				if 	(m_lfReduceMulOf_bornIdeas 	<= 0.0 || m_lfReduceMulOf_bornIdeas 	>= 1.0)
+					m_lfReduceMulOf_bornIdeas = 0.0;
 			}
         	/// @brief 性别
         	enum Gender{
@@ -40,14 +42,14 @@ namespace emansis {
 			/// @return 		重置失败不修改并返回false，重置成功返回true
 			bool		reBornIdeasReduce	(double newReduceMul) {
 				if 	(newReduceMul <= 0.0 || newReduceMul >= 1.0) return false;
-				m_lfBornIdeasReduceMul = newReduceMul; return true;
+				m_lfReduceMulOf_bornIdeas = newReduceMul; return true;
 			}
 			/// @brief 			重置一胎意愿
 			/// @param newFirst	新的意愿		1.0~0.0
 			/// @return 		重置失败不修改并返回false，重置成功返回true
 			bool		reBornIdeasFirst	(double newFirst) {
 				if 	(newFirst <= 0.0 || newFirst >= 1.0) return false;
-				m_lfBornIdeasFirst = newFirst; return true;
+				m_lfInitialValueOf_bornIdeasFirst = newFirst; return true;
 			}
         	/// @brief 重置对象并模拟一次成员诞生流程
         	void 		reCaculation		() {
@@ -57,7 +59,7 @@ namespace emansis {
         		//开始模拟
         		int gender = 0;
         		int step = 0;
-				double currentIdeas = m_lfBornIdeasFirst;
+				double currentIdeas = m_lfInitialValueOf_bornIdeasFirst;
         		do {
 					double temp = (double)rand() / (double)32767;
 					if (temp <= currentIdeas) {	
@@ -66,7 +68,7 @@ namespace emansis {
 						else 				++m_nFemalCount;
 						if (++step >= UINT8_MAX) break;	//可更改保底条件
 						//意愿迭代
-						currentIdeas *= (1.0 - m_lfBornIdeasReduceMul);
+						currentIdeas *= (1.0 - m_lfReduceMulOf_bornIdeas);
 					}
         		} while (gender != Male);
         	}
